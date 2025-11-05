@@ -7,20 +7,30 @@ export default function Jumpscare() {
   const controls = useAnimation();
   useEffect(() => {
     const run = async () => {
-      await controls.start({ opacity: 1, transition: { duration: 0.3 } });
-
-      const bg = new Howl({ src: ["/scare.mp3"], volume: 0.1, loop: true });
+      const bg = new Howl({
+        src: ["/scream.wav"],
+        volume: 0.1,
+        loop: false,
+      });
+      let playCount = 0;
+      
+      bg.on("end", () => {
+        playCount++;
+        if (playCount < 2) {
+          bg.play(); // phát lại lần thứ 2
+        }
+      });
       bg.play();
-      bg.fade(0.1, 3, 1000);
-
+      bg.fade(0.1, 5, 500);
+      await controls.start({ opacity: 1, transition: { duration: 0.1 } });
       await controls.start({
-        scale: 2,
-        transition: { duration: 2, ease: "easeIn" },
+        scale: 1.5,
+        transition: { duration: 1, ease: "easeIn" },
       });
 
       await controls.start({
-        opacity: [1, 0, 1],
-        transition: { duration: 0.5, repeat: 20 },
+        opacity: [1, 0.5, 1],
+        transition: { duration: 0.1, repeat: 30 },
       });
 
       await controls.start({
@@ -29,13 +39,13 @@ export default function Jumpscare() {
       });
     };
     run();
-  }, []);
+  }, [controls]);
   return (
-    <div>
-      <div className="relative w-screen h-screen bg-black overflow-hidden">
+    <div className="fixed inset-0">
+      <div className="relative w-full h-full overflow-hidden">
         {/* Background Image */}
         <motion.img
-          src="/ghost.png"
+          src="/scare.jpg"
           alt="scary"
           initial={{ scale: 1, opacity: 0 }}
           animate={controls}
@@ -88,6 +98,16 @@ export function FaceInFog() {
 }
 
 export function ErrorScreen() {
+  useEffect(() => {
+    const run = async () => {
+      const bg = new Howl({ src: ["/glitch.wav"], volume: 0.5, loop: false });
+      bg.play();
+      setTimeout(() => {
+        bg.stop();
+      }, 4000);
+    };
+    run();
+  }, []);
   const glitch: GlitchHandle = useGlitch({
     playMode: "manual",
   });
@@ -99,10 +119,10 @@ export function ErrorScreen() {
     const triggerIntenseGlitch = async () => {
       // Wait 3 seconds with no effects
       await new Promise((resolve) => setTimeout(resolve, 3000));
-      
+
       // Start glitch effect
       glitch.startGlitch();
-      
+
       // Set intense glitch options - slower and creepier
       glitch.setOptions({
         playMode: "always",
@@ -142,9 +162,9 @@ export function ErrorScreen() {
   }, [glitch, controls]);
 
   return (
-    <motion.div 
+    <motion.div
       animate={controls}
-      className="relative w-screen h-screen bg-blue-600 overflow-hidden flex items-center justify-center p-8"
+      className="relative w-screen h-screen bg-blue-500 overflow-hidden flex items-center justify-center p-4 sm:p-6 md:p-8"
     >
       <div ref={glitch.ref} className="w-full max-w-4xl">
         <motion.div
@@ -153,23 +173,21 @@ export function ErrorScreen() {
           transition={{ duration: 0.1 }}
           className="font-mono text-white"
         >
-          <div className="text-6xl font-bold mb-8">:(</div>
-          <div className="text-2xl mb-6">
+          <div className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 md:mb-8">:(</div>
+          <div className="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-5 md:mb-6">
             Your PC ran into a problem and needs to restart. We're just
             collecting some error info, and then we'll restart for you.
           </div>
-          <div className="text-xl mb-8">0% complete</div>
-          <div className="text-sm space-y-2">
+          <div className="text-sm sm:text-base md:text-lg lg:text-xl mb-4 sm:mb-6 md:mb-8">0% complete</div>
+          <div className="text-xs sm:text-sm space-y-2">
             <div>
               For more information about this issue and possible fixes, visit
               https://www.windows.com/stopcode
             </div>
-            <div className="mt-8">
+            <div className="mt-4 sm:mt-6 md:mt-8">
               If you call a support person, give them this info:
             </div>
-            <div className="mt-4 text-lg">
-              Stop code: CRITICAL_PROCESS_DIED
-            </div>
+            <div className="mt-2 sm:mt-3 md:mt-4 text-sm sm:text-base md:text-lg">Stop code: CRITICAL_PROCESS_DIED</div>
           </div>
         </motion.div>
       </div>
